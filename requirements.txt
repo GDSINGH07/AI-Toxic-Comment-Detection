@@ -1,0 +1,8 @@
+
+gradio==5.49.1
+pandas
+numpy
+scikit-learn
+joblib
+matplotlib
+scipy

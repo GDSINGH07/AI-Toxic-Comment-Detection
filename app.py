@@ -373,7 +373,7 @@ with gr.Blocks(
     with gr.Row():
 
         # LEFT SIDEBAR
-                  with gr.Column(scale=1, min_width=250, elem_id="sidebar"):
+         with gr.Column(scale=1, min_width=250, elem_id="sidebar"):
                 gr.Image(
                     value="Gemini_Generated_Image_rvtbb0rvtbb0rvtbu-removebg-preview.png",
                     show_label=False,
@@ -386,16 +386,16 @@ with gr.Blocks(
                 ### Detection System
                 """)
 
-            page_navigation = gr.Radio(
-            elem_id="page-navigation",
-                choices=[
-                    "Home / Live Detection",
-                    "Graphs & Analytics",
-                    "About Project"
-                ],
-                value="Home / Live Detection",
-                label="NAVIGATION"
-            )
+                page_navigation = gr.Radio(
+                    elem_id="page-navigation",
+                    choices=[
+                        "Home / Live Detection",
+                        "Graphs & Analytics",
+                        "About Project"
+                    ],
+                    value="Home / Live Detection",
+                    label="NAVIGATION"
+                )
 
             gr.Markdown("""
             ---

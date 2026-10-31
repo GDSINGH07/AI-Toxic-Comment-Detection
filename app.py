@@ -397,10 +397,7 @@ with gr.Blocks(
                     label="NAVIGATION"
                 )
 
-                 gr.Markdown("""
-                ---
-                <small>AI-Powered Content Safety</small>
-                """)
+                
         # MAIN CONTENT AREA
         with gr.Column(scale=4, min_width=0):
 

@@ -472,7 +472,7 @@ with gr.Blocks(
             about_page
         ]
     )
-     gr.Markdown("""
+    gr.Markdown("""
     ---
     <center>AI Toxic Comment Detection System | Machine Learning Project</center>
     """)

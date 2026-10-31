@@ -202,9 +202,50 @@ macro_f1 = macro.get("f1-score", 0) * 100
 # ==========================================
 
 custom_css = """
+body, .gradio-container {
+    background: #08111f !important;
+    color: #e5efff !important;
+}
+
 .gradio-container {
-    max-width: 1200px !important;
+    max-width: 1450px !important;
     margin: auto !important;
+}
+
+.block, .form, .panel {
+    background: #111e32 !important;
+    border: 1px solid #233b5d !important;
+    border-radius: 14px !important;
+}
+
+h1, h2, h3 {
+    color: #60a5fa !important;
+}
+
+p, label, span {
+    color: #dbeafe;
+}
+
+button.primary {
+    background: linear-gradient(90deg, #2563eb, #06b6d4) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+}
+
+button {
+    border-radius: 10px !important;
+}
+
+input, textarea {
+    background: #0b1729 !important;
+    color: white !important;
+    border: 1px solid #31527a !important;
+    border-radius: 10px !important;
+}
+
+footer {
+    display: none !important;
 }
 """
 

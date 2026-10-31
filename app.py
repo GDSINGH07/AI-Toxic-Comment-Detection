@@ -293,231 +293,189 @@ with gr.Blocks(
     machine learning model.
     """)
 
-    with gr.Tabs():
+        # PREMIUM SIDEBAR DASHBOARD
 
-        # ----------------------------------
-        # HOME / LIVE DETECTION
-        # ----------------------------------
+    def navigate(page):
+        return (
+            gr.update(visible=page == "Home / Live Detection"),
+            gr.update(visible=page == "Graphs & Analytics"),
+            gr.update(visible=page == "About Project")
+        )
 
-        with gr.Tab("🏠 Home / Live Detection"):
+    with gr.Row():
 
+        # LEFT SIDEBAR
+        with gr.Column(scale=1, min_width=220):
             gr.Markdown("""
-            ## Test Your Comment
-
-            Enter a word, sentence, or paragraph.
-            Adjust the filters to explore the prediction results.
+            # 🛡️ TOXIC AI
+            ### Detection System
+            ---
+            **NAVIGATION**
             """)
 
-            comment_input = gr.Textbox(
-                label="Enter your text",
-                placeholder="Type your comment here...",
-                lines=5
+            page_navigation = gr.Radio(
+                choices=[
+                    "Home / Live Detection",
+                    "Graphs & Analytics",
+                    "About Project"
+                ],
+                value="Home / Live Detection",
+                label="Select Page"
             )
 
-            threshold_slider = gr.Slider(
-                minimum=10,
-                maximum=90,
-                value=threshold * 100,
-                step=5,
-                label="Detection Threshold (%)"
-            )
+            gr.Markdown("""
+            ---
+            <small>AI-Powered Content Safety</small>
+            """)
 
-            live_category_filter = gr.CheckboxGroup(
-                choices=all_category_choices,
-                value=categories,
-                label="Select Categories to Analyze"
-            )
+        # MAIN CONTENT AREA
+        with gr.Column(scale=5, min_width=500):
 
-            with gr.Row():
+            # HOME PAGE
+            with gr.Column(visible=True) as home_page:
+                gr.Markdown("""
+                # 🛡️ AI Toxic Comment Detection
+                ### Analyze comments and identify harmful content.
+                """)
+
+                comment_input = gr.Textbox(
+                    label="Enter Your Comment",
+                    placeholder="Type or paste a comment here...",
+                    lines=4
+                )
+
+                threshold_slider = gr.Slider(
+                    minimum=10,
+                    maximum=90,
+                    value=50,
+                    step=5,
+                    label="Detection Threshold (%)"
+                )
+
+                category_filter = gr.CheckboxGroup(
+                    choices=all_category_choices,
+                    value=categories,
+                    label="Select Toxicity Categories"
+                )
+
                 analyze_button = gr.Button(
                     "🔍 Analyze Comment",
                     variant="primary"
                 )
 
-                clear_button = gr.ClearButton(
-                    components=[comment_input]
+                result_output = gr.Markdown(label="Detection Result")
+
+                score_table = gr.Dataframe(
+                    label="Category Scores",
+                    interactive=False
                 )
 
-            result_output = gr.Markdown(
-                label="Detection Result"
-            )
+                score_chart = gr.Plot(label="Detection Score Chart")
 
-            score_output = gr.Dataframe(
-                label="Updated Category-wise Model Scores",
-                interactive=False
-            )
+                analyze_button.click(
+                    fn=analyze_comment,
+                    inputs=[
+                        comment_input,
+                        threshold_slider,
+                        category_filter
+                    ],
+                    outputs=[
+                        result_output,
+                        score_table,
+                        score_chart
+                    ]
+                )
 
-            graph_output = gr.Plot(
-                label="Updated Toxicity Score Visualization"
-            )
+            # ANALYTICS PAGE
+            with gr.Column(visible=False) as analytics_page:
+                gr.Markdown("""
+                # 📊 Graphs & Analytics
+                ### Explore dataset distribution and model performance.
+                """)
 
-            live_inputs = [
-                comment_input,
-                threshold_slider,
-                live_category_filter
-            ]
-
-            live_outputs = [
-                result_output,
-                score_output,
-                graph_output
-            ]
-
-            analyze_button.click(
-                fn=analyze_comment,
-                inputs=live_inputs,
-                outputs=live_outputs
-            )
-
-            threshold_slider.change(
-                fn=analyze_comment,
-                inputs=live_inputs,
-                outputs=live_outputs
-            )
-
-            live_category_filter.change(
-                fn=analyze_comment,
-                inputs=live_inputs,
-                outputs=live_outputs
-            )
-
-            gr.Markdown("""
-            **Note:** GOOD / NON-TOXIC means that none of the
-            selected categories crossed the chosen threshold.
-            It does not guarantee that the comment is positive
-            or harmless.
-
-            Model scores are estimates, not guarantees.
-            """)
-
-        # ----------------------------------
-        # GRAPHS AND ANALYTICS
-        # ----------------------------------
-
-        with gr.Tab("📊 Graphs & Analytics"):
-
-            gr.Markdown("""
-            ## Interactive Dataset and Model Analytics
-
-            Select or deselect categories below.
-            The charts and values will update automatically.
-            """)
-
-            gr.Markdown("### Overall Model Performance")
-
-            with gr.Row():
                 gr.Markdown(
-                    f"### Micro F1 Score: {micro_f1:.2f}%"
+                    f"**Micro F1 Score:** {micro_f1:.2f}%"
+                    f" &nbsp;&nbsp; | &nbsp;&nbsp; "
+                    f"**Macro F1 Score:** {macro_f1:.2f}%"
                 )
-                gr.Markdown(
-                    f"### Macro F1 Score: {macro_f1:.2f}%"
+
+                analytics_filter = gr.CheckboxGroup(
+                    choices=all_category_choices,
+                    value=categories,
+                    label="Filter Categories"
                 )
 
-            analytics_filter = gr.CheckboxGroup(
-                choices=all_category_choices,
-                value=categories,
-                label="Filter Analytics by Toxicity Category"
-            )
+                refresh_analytics = gr.Button(
+                    "Update Analytics",
+                    variant="primary"
+                )
 
-            analytics_values = gr.Dataframe(
-                value=create_analytics(categories)[2],
-                label="Selected Category Values",
-                interactive=False
-            )
+                distribution_chart = gr.Plot(
+                    label="Dataset Distribution"
+                )
 
-            gr.Markdown("### 1. Dataset Category Distribution")
+                performance_chart = gr.Plot(
+                    label="Model Performance"
+                )
 
-            distribution_plot = gr.Plot(
-                value=create_analytics(categories)[0]
-            )
+                analytics_table = gr.Dataframe(
+                    label="Analytics Data",
+                    interactive=False
+                )
 
-            gr.Markdown("### 2. Model F1 Score by Category")
+                refresh_analytics.click(
+                    fn=create_analytics,
+                    inputs=analytics_filter,
+                    outputs=[
+                        distribution_chart,
+                        performance_chart,
+                        analytics_table
+                    ]
+                )
 
-            performance_plot = gr.Plot(
-                value=create_analytics(categories)[1]
-            )
+            # ABOUT PAGE
+            with gr.Column(visible=False) as about_page:
+                gr.Markdown("""
+                # ℹ️ About This Project
 
-            analytics_filter.change(
-                fn=create_analytics,
-                inputs=analytics_filter,
-                outputs=[
-                    distribution_plot,
-                    performance_plot,
-                    analytics_values
-                ]
-            )
+                **AI Toxic Comment Detection System**
 
-            gr.Markdown("""
-            **F1 Score:** A measure combining precision and
-            recall. Higher values generally indicate better
-            classification performance.
+                This project uses Machine Learning and Natural Language
+                Processing to identify harmful comments.
 
-            **Note:** Filtering changes which categories are
-            displayed. It does not retrain the model or change
-            the original dataset and performance measurements.
-            """)
+                ### Detection Categories
+                - Toxic
+                - Severe Toxic
+                - Obscene
+                - Threat
+                - Insult
+                - Identity Hate
 
-        # ----------------------------------
-        # ABOUT PROJECT
-        # ----------------------------------
+                ### Technologies Used
+                - Python
+                - Scikit-learn
+                - TF-IDF
+                - Logistic Regression
+                - Gradio
 
-        with gr.Tab("ℹ️ About Project"):
+                ### Project Purpose
+                To help identify harmful online comments and support
+                safer digital communication.
+                """)
 
-            gr.Markdown("""
-            ## About the Project
-
-            **AI Toxic Comment Detection System** is a
-            machine learning project designed to identify
-            potentially harmful comments in text.
-
-            ### Six Detection Categories
-
-            1. Toxic
-            2. Severe Toxic
-            3. Obscene
-            4. Threat
-            5. Insult
-            6. Identity Hate
-
-            ### Technology Used
-
-            - Python
-            - Scikit-learn
-            - TF-IDF Vectorization
-            - One-vs-Rest Logistic Regression
-            - Gradio
-            - Matplotlib
-            - Pandas
-
-            ### Working Method
-
-            1. User enters a comment.
-            2. TF-IDF converts text into numerical features.
-            3. The trained model analyzes the text.
-            4. Six category scores are calculated.
-            5. Selected categories crossing the threshold are displayed.
-
-            ### Dataset
-
-            Jigsaw Toxic Comment Classification Dataset.
-
-            ### Project Purpose
-
-            To help identify potentially harmful online
-            language and encourage safer digital communication.
-
-            **Disclaimer:** This is an automated classification
-            system. Predictions may be incorrect and should not
-            be treated as a final judgment about a person
-            or their intentions.
-            """)
-
-    gr.Markdown("""
+    page_navigation.change(
+        fn=navigate,
+        inputs=page_navigation,
+        outputs=[
+            home_page,
+            analytics_page,
+            about_page
+        ]
+    )
+     gr.Markdown("""
     ---
     <center>AI Toxic Comment Detection System | Machine Learning Project</center>
     """)
-
-
 # ==========================================
 # 6. LAUNCH APPLICATION
 # ==========================================

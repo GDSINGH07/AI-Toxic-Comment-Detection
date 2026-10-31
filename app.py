@@ -374,8 +374,14 @@ with gr.Blocks(
 
         # LEFT SIDEBAR
         with gr.Column(scale=1, min_width=250, elem_id="sidebar"):
+                       gr.Image(
+                value="Gemini_Generated_Image_rvtbb0rvtbb0rvtbu-removebg-preview.png",
+                show_label=False,
+                container=False,
+                interactive=False,
+                height=180
+            )
             gr.Markdown("""
-            # 🛡️ TOXIC AI
             ### Detection System
             """)
 

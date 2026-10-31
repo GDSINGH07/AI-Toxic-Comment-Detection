@@ -305,12 +305,10 @@ with gr.Blocks(
     with gr.Row():
 
         # LEFT SIDEBAR
-        with gr.Column(scale=2, min_width=300):
-            gr.Markdown("""
+        with gr.Column(scale=3, min_width=360):
+             gr.Markdown("""
             # 🛡️ TOXIC AI
             ### Detection System
-            ---
-            **NAVIGATION**
             """)
 
             page_navigation = gr.Radio(
@@ -320,7 +318,7 @@ with gr.Blocks(
                     "About Project"
                 ],
                 value="Home / Live Detection",
-                label="Select Page"
+                label="NAVIGATION"
             )
 
             gr.Markdown("""

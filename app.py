@@ -214,45 +214,88 @@ body {
 }
 
 .gradio-container {
-    max-width: 1450px !important;
+    max-width: 1500px !important;
     margin: auto !important;
     background: transparent !important;
     color: #eaf2ff !important;
     font-family: 'Inter', sans-serif !important;
 }
 
-.block, .form, .panel, .gr-panel {
-    background: rgba(17, 30, 55, 0.58) !important;
-    border: 1px solid rgba(120, 170, 255, 0.20) !important;
-    border-radius: 18px !important;
-    backdrop-filter: blur(18px) !important;
-    -webkit-backdrop-filter: blur(18px) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
+/* SIDEBAR */
+#sidebar {
+    background: rgba(17, 30, 55, 0.92) !important;
+    border: 1px solid rgba(120, 170, 255, 0.25) !important;
+    border-radius: 20px !important;
+    padding: 22px !important;
+    min-width: 250px !important;
+    height: fit-content !important;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.3) !important;
 }
 
-h1 {
+/* Remove unnecessary boxes inside sidebar */
+#sidebar .block {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+/* VERTICAL NAVIGATION */
+#page-navigation fieldset {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    border: none !important;
+}
+
+#page-navigation .wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+#page-navigation label {
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 13px !important;
+    background: rgba(50, 75, 115, 0.45) !important;
+    border: 1px solid rgba(120, 170, 255, 0.2) !important;
+    border-radius: 12px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* MAIN CONTENT */
+.gradio-container h1 {
     color: #ffffff !important;
     font-weight: 800 !important;
 }
 
-h2, h3 {
+.gradio-container h2,
+.gradio-container h3 {
     color: #8ec5ff !important;
     font-weight: 700 !important;
 }
 
-p, label, span {
+.gradio-container p,
+.gradio-container label {
     color: #d6e5ff;
 }
 
+/* INPUTS */
 input, textarea {
-    background: rgba(5, 15, 32, 0.75) !important;
+    background: rgba(5, 15, 32, 0.85) !important;
     color: white !important;
     border: 1px solid rgba(96, 165, 250, 0.35) !important;
     border-radius: 12px !important;
+    max-width: 100% !important;
 }
 
 button {
     border-radius: 12px !important;
+    white-space: normal !important;
     transition: all 0.25s ease !important;
 }
 
@@ -265,17 +308,37 @@ button.primary {
 
 button.primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 26px rgba(6, 182, 212, 0.5) !important;
 }
 
 input[type="range"] {
     accent-color: #38bdf8 !important;
 }
 
+/* CHARTS AND TABLES */
+.gradio-container img,
+.gradio-container canvas,
+.gradio-container table {
+    max-width: 100% !important;
+}
+
 footer {
     display: none !important;
 }
+
+/* SMALL SCREENS */
+@media (max-width: 768px) {
+    #sidebar {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .gradio-container {
+        padding: 10px !important;
+    }
+}
 """
+
+
 
 
 with gr.Blocks(
@@ -305,13 +368,14 @@ with gr.Blocks(
     with gr.Row():
 
         # LEFT SIDEBAR
-        with gr.Column(scale=3, min_width=360):
+        with gr.Column(scale=1, min_width=250, elem_id="sidebar"):
             gr.Markdown("""
             # 🛡️ TOXIC AI
             ### Detection System
             """)
 
             page_navigation = gr.Radio(
+            elem_id="page-navigation",
                 choices=[
                     "Home / Live Detection",
                     "Graphs & Analytics",
@@ -327,7 +391,7 @@ with gr.Blocks(
             """)
 
         # MAIN CONTENT AREA
-        with gr.Column(scale=5, min_width=500):
+        with gr.Column(scale=4, min_width=0):
 
             # HOME PAGE
             with gr.Column(visible=True) as home_page:

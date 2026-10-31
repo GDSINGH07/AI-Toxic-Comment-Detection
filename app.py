@@ -247,12 +247,17 @@ body {
     align-items: stretch !important;
     gap: 12px !important;
     border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
 }
 
 #page-navigation .wrap {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 #page-navigation label {

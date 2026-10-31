@@ -306,7 +306,7 @@ with gr.Blocks(
 
         # LEFT SIDEBAR
         with gr.Column(scale=3, min_width=360):
-             gr.Markdown("""
+            gr.Markdown("""
             # 🛡️ TOXIC AI
             ### Detection System
             """)

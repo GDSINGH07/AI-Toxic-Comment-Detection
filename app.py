@@ -4,7 +4,6 @@ import joblib
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
-import html
 import os
 
 # ==========================================
@@ -27,88 +26,105 @@ with open("models/classification_report.json", "r") as f:
     report = json.load(f)
 
 
+def category_name(category):
+    return category.replace("_", " ").title()
+
+
+all_category_choices = [
+    (category_name(category), category)
+    for category in categories
+]
+
+
 # ==========================================
-# 2. LIVE TOXIC COMMENT DETECTION
+# 2. LIVE COMMENT DETECTION
 # ==========================================
 
-def analyze_comment(comment):
+def analyze_comment(comment, threshold_value, selected_categories):
 
     if not comment or not comment.strip():
         return "Please enter some text first.", pd.DataFrame(), None
 
-    # Transform input text
-    text_vector = tfidf.transform([comment])
+    if not selected_categories:
+        return (
+            "Please select at least one toxicity category.",
+            pd.DataFrame(),
+            None
+        )
 
-    # Predict probabilities
+    text_vector = tfidf.transform([comment])
     probabilities = model.predict_proba(text_vector)[0]
 
-    # Convert probabilities into percentages
-    scores = probabilities * 100
-
-    # Apply threshold to each category
-    predictions = probabilities >= threshold
+    selected_indices = [
+        i for i, category in enumerate(categories)
+        if category in selected_categories
+    ]
 
     detected = [
         categories[i]
-        for i in range(len(categories))
-        if predictions[i]
+        for i in selected_indices
+        if probabilities[i] >= threshold_value / 100
     ]
 
-    # Prepare result
-    if len(detected) == 0:
+    if detected:
+        result = "## TOXIC CATEGORY DETECTED\n\n"
+        result += "**Detected categories:**\n\n"
+
+        for category in detected:
+            result += f"- {category_name(category)}\n"
+    else:
         result = """
 ## GOOD / NON-TOXIC
 
-No toxicity category was detected above the configured threshold.
+No selected toxicity category crossed the chosen threshold.
 """
-    else:
-        result = """
-## TOXIC COMMENT DETECTED
 
-**Detected categories:**
+    result += f"\n**Detection threshold:** {threshold_value:.0f}%"
+    result += f"\n**Selected categories:** {len(selected_categories)}"
 
-"""
-        for category in detected:
-            result += f"- {category.replace('_', ' ').title()}\n"
-
-    result += f"\n**Detection threshold:** {threshold * 100:.0f}%"
-
-    # Prepare score table
     score_df = pd.DataFrame({
         "Category": [
-            category.replace("_", " ").title()
-            for category in categories
+            category_name(categories[i])
+            for i in selected_indices
         ],
-        "Model Score (%)": [round(float(s), 2) for s in scores],
+        "Model Score (%)": [
+            round(float(probabilities[i] * 100), 2)
+            for i in selected_indices
+        ],
         "Detected": [
-            "Yes" if predictions[i] else "No"
-            for i in range(len(categories))
+            "Yes" if probabilities[i] >= threshold_value / 100 else "No"
+            for i in selected_indices
         ]
     })
 
-    # Plot individual category scores
     fig, ax = plt.subplots(figsize=(9, 4))
 
-    colors = [
-        "tomato" if predictions[i] else "steelblue"
-        for i in range(len(categories))
+    scores = [
+        probabilities[i] * 100
+        for i in selected_indices
     ]
 
     labels = [
-        category.replace("_", " ").title()
-        for category in categories
+        category_name(categories[i])
+        for i in selected_indices
+    ]
+
+    colors = [
+        "tomato" if probabilities[i] >= threshold_value / 100
+        else "steelblue"
+        for i in selected_indices
     ]
 
     ax.barh(labels, scores, color=colors)
     ax.axvline(
-        threshold * 100,
+        threshold_value,
         linestyle="--",
         color="black",
         label="Detection threshold"
     )
 
     ax.set_xlabel("Model score (%)")
-    ax.set_title("Toxicity Category Scores")
+    ax.set_title("Selected Toxicity Category Scores")
     ax.set_xlim(0, 100)
     ax.legend()
     plt.tight_layout()
@@ -117,68 +133,61 @@ No toxicity category was detected above the configured threshold.
 
 
 # ==========================================
-# 3. DATASET DISTRIBUTION GRAPH
+# 3. INTERACTIVE ANALYTICS
 # ==========================================
 
-def create_distribution_chart():
+def create_analytics(selected_categories):
 
-    labels = [
-        category.replace("_", " ").title()
-        for category in categories
+    if not selected_categories:
+        return None, None, pd.DataFrame()
+
+    selected = [
+        category for category in categories
+        if category in selected_categories
     ]
 
-    values = [
-        category_counts.get(category, 0)
-        for category in categories
+    labels = [category_name(c) for c in selected]
+
+    counts = [
+        category_counts.get(c, 0)
+        for c in selected
     ]
 
-    fig, ax = plt.subplots(figsize=(9, 5))
+    f1_values = [
+        report.get(c, {}).get("f1-score", 0) * 100
+        for c in selected
+    ]
 
-    ax.bar(labels, values)
-
-    ax.set_title("Toxic Comment Dataset Distribution")
-    ax.set_ylabel("Number of labelled comments")
-    ax.set_xlabel("Toxicity Categories")
-
-    plt.xticks(rotation=30, ha="right")
+    # Dataset distribution chart
+    fig1, ax1 = plt.subplots(figsize=(9, 5))
+    ax1.bar(labels, counts)
+    ax1.set_title("Dataset Distribution - Selected Categories")
+    ax1.set_ylabel("Number of labelled comments")
+    ax1.set_xlabel("Toxicity Categories")
+    ax1.tick_params(axis="x", rotation=30)
     plt.tight_layout()
 
-    return fig
-
-
-# ==========================================
-# 4. MODEL PERFORMANCE GRAPH
-# ==========================================
-
-def create_performance_chart():
-
-    labels = []
-    f1_values = []
-
-    for category in categories:
-
-        if category in report:
-            labels.append(category.replace("_", " ").title())
-            f1_values.append(
-                report[category].get("f1-score", 0) * 100
-            )
-
-    fig, ax = plt.subplots(figsize=(9, 5))
-
-    ax.bar(labels, f1_values)
-
-    ax.set_title("Model F1 Score by Toxicity Category")
-    ax.set_ylabel("F1 Score (%)")
-    ax.set_ylim(0, 100)
-
-    plt.xticks(rotation=30, ha="right")
+    # Model F1 score chart
+    fig2, ax2 = plt.subplots(figsize=(9, 5))
+    ax2.bar(labels, f1_values)
+    ax2.set_title("Model F1 Score - Selected Categories")
+    ax2.set_ylabel("F1 Score (%)")
+    ax2.set_ylim(0, 100)
+    ax2.tick_params(axis="x", rotation=30)
     plt.tight_layout()
 
-    return fig
+    # Updated values table
+    values_df = pd.DataFrame({
+        "Category": labels,
+        "Dataset Label Count": counts,
+        "F1 Score (%)": [round(v, 2) for v in f1_values]
+    })
+
+    return fig1, fig2, values_df
 
 
 # ==========================================
-# 5. OVERALL MODEL METRICS
+# 4. OVERALL MODEL METRICS
 # ==========================================
 
 overall = report.get("micro avg", {})
@@ -189,7 +198,7 @@ macro_f1 = macro.get("f1-score", 0) * 100
 
 
 # ==========================================
-# 6. WEBSITE INTERFACE
+# 5. WEBSITE INTERFACE
 # ==========================================
 
 custom_css = """
@@ -210,14 +219,14 @@ with gr.Blocks(
 
     ### Machine Learning Based Text Classification
 
-    Detect harmful language and identify six toxicity categories
-    using an AI-powered machine learning model.
+    Detect potentially harmful language using an AI-powered
+    machine learning model.
     """)
 
     with gr.Tabs():
 
         # ----------------------------------
-        # HOME AND LIVE DETECTION
+        # HOME / LIVE DETECTION
         # ----------------------------------
 
         with gr.Tab("🏠 Home / Live Detection"):
@@ -225,15 +234,28 @@ with gr.Blocks(
             gr.Markdown("""
             ## Test Your Comment
 
-            Enter a word, sentence, or paragraph below.
-            The AI system will analyze it and display the
-            detected categories and model scores.
+            Enter a word, sentence, or paragraph.
+            Adjust the filters to explore the prediction results.
             """)
 
             comment_input = gr.Textbox(
                 label="Enter your text",
                 placeholder="Type your comment here...",
                 lines=5
+            )
+
+            threshold_slider = gr.Slider(
+                minimum=10,
+                maximum=90,
+                value=threshold * 100,
+                step=5,
+                label="Detection Threshold (%)"
+            )
+
+            live_category_filter = gr.CheckboxGroup(
+                choices=all_category_choices,
+                value=categories,
+                label="Select Categories to Analyze"
             )
 
             with gr.Row():
@@ -251,29 +273,51 @@ with gr.Blocks(
             )
 
             score_output = gr.Dataframe(
-                label="Category-wise Model Scores",
+                label="Updated Category-wise Model Scores",
                 interactive=False
             )
 
             graph_output = gr.Plot(
-                label="Toxicity Score Visualization"
+                label="Updated Toxicity Score Visualization"
             )
+
+            live_inputs = [
+                comment_input,
+                threshold_slider,
+                live_category_filter
+            ]
+
+            live_outputs = [
+                result_output,
+                score_output,
+                graph_output
+            ]
 
             analyze_button.click(
                 fn=analyze_comment,
-                inputs=comment_input,
-                outputs=[
-                    result_output,
-                    score_output,
-                    graph_output
-                ]
+                inputs=live_inputs,
+                outputs=live_outputs
+            )
+
+            threshold_slider.change(
+                fn=analyze_comment,
+                inputs=live_inputs,
+                outputs=live_outputs
+            )
+
+            live_category_filter.change(
+                fn=analyze_comment,
+                inputs=live_inputs,
+                outputs=live_outputs
             )
 
             gr.Markdown("""
             **Note:** GOOD / NON-TOXIC means that none of the
-            six toxicity categories crossed the configured
-            detection threshold. It does not guarantee that
-            the comment is positive or harmless.
+            selected categories crossed the chosen threshold.
+            It does not guarantee that the comment is positive
+            or harmless.
+
+            Model scores are estimates, not guarantees.
             """)
 
         # ----------------------------------
@@ -283,40 +327,64 @@ with gr.Blocks(
         with gr.Tab("📊 Graphs & Analytics"):
 
             gr.Markdown("""
-            ## Dataset and Model Analytics
+            ## Interactive Dataset and Model Analytics
 
-            Explore the dataset distribution and the
-            performance of the trained classification model.
+            Select or deselect categories below.
+            The charts and values will update automatically.
             """)
 
+            gr.Markdown("### Overall Model Performance")
+
             with gr.Row():
-
-                gr.Column()
-
                 gr.Markdown(
                     f"### Micro F1 Score: {micro_f1:.2f}%"
                 )
-
                 gr.Markdown(
                     f"### Macro F1 Score: {macro_f1:.2f}%"
                 )
 
+            analytics_filter = gr.CheckboxGroup(
+                choices=all_category_choices,
+                value=categories,
+                label="Filter Analytics by Toxicity Category"
+            )
+
+            analytics_values = gr.Dataframe(
+                value=create_analytics(categories)[2],
+                label="Selected Category Values",
+                interactive=False
+            )
+
             gr.Markdown("### 1. Dataset Category Distribution")
 
             distribution_plot = gr.Plot(
-                value=create_distribution_chart()
+                value=create_analytics(categories)[0]
             )
 
             gr.Markdown("### 2. Model F1 Score by Category")
 
             performance_plot = gr.Plot(
-                value=create_performance_chart()
+                value=create_analytics(categories)[1]
+            )
+
+            analytics_filter.change(
+                fn=create_analytics,
+                inputs=analytics_filter,
+                outputs=[
+                    distribution_plot,
+                    performance_plot,
+                    analytics_values
+                ]
             )
 
             gr.Markdown("""
-            **F1 Score:** A measure that combines precision
-            and recall. Higher values generally indicate
-            better classification performance.
+            **F1 Score:** A measure combining precision and
+            recall. Higher values generally indicate better
+            classification performance.
+
+            **Note:** Filtering changes which categories are
+            displayed. It does not retrain the model or change
+            the original dataset and performance measurements.
             """)
 
         # ----------------------------------
@@ -357,7 +425,7 @@ with gr.Blocks(
             2. TF-IDF converts text into numerical features.
             3. The trained model analyzes the text.
             4. Six category scores are calculated.
-            5. Categories crossing the threshold are displayed.
+            5. Selected categories crossing the threshold are displayed.
 
             ### Dataset
 
@@ -369,8 +437,8 @@ with gr.Blocks(
             language and encourage safer digital communication.
 
             **Disclaimer:** This is an automated classification
-            system. Predictions may be incorrect and should
-            not be treated as a final judgment about a person
+            system. Predictions may be incorrect and should not
+            be treated as a final judgment about a person
             or their intentions.
             """)
 
@@ -381,11 +449,11 @@ with gr.Blocks(
 
 
 # ==========================================
-# 7. LAUNCH APPLICATION
+# 6. LAUNCH APPLICATION
 # ==========================================
 
 if __name__ == "__main__":
     demo.launch(
-    server_name="0.0.0.0",
-    server_port=int(os.environ.get("PORT", 10000))
-)
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 10000))
+    )

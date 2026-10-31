@@ -201,53 +201,82 @@ macro_f1 = macro.get("f1-score", 0) * 100
 # 5. WEBSITE INTERFACE
 # ==========================================
 
+
 custom_css = """
-body, .gradio-container {
-    background: #08111f !important;
-    color: #e5efff !important;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+body {
+    background:
+        radial-gradient(circle at 15% 15%, #12366b 0%, transparent 35%),
+        radial-gradient(circle at 85% 80%, #30205e 0%, transparent 35%),
+        #050b18 !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 .gradio-container {
     max-width: 1450px !important;
     margin: auto !important;
+    background: transparent !important;
+    color: #eaf2ff !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
-.block, .form, .panel {
-    background: #111e32 !important;
-    border: 1px solid #233b5d !important;
-    border-radius: 14px !important;
+.block, .form, .panel, .gr-panel {
+    background: rgba(17, 30, 55, 0.58) !important;
+    border: 1px solid rgba(120, 170, 255, 0.20) !important;
+    border-radius: 18px !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
 }
 
-h1, h2, h3 {
-    color: #60a5fa !important;
+h1 {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+h2, h3 {
+    color: #8ec5ff !important;
+    font-weight: 700 !important;
 }
 
 p, label, span {
-    color: #dbeafe;
-}
-
-button.primary {
-    background: linear-gradient(90deg, #2563eb, #06b6d4) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 10px !important;
-}
-
-button {
-    border-radius: 10px !important;
+    color: #d6e5ff;
 }
 
 input, textarea {
-    background: #0b1729 !important;
+    background: rgba(5, 15, 32, 0.75) !important;
     color: white !important;
-    border: 1px solid #31527a !important;
-    border-radius: 10px !important;
+    border: 1px solid rgba(96, 165, 250, 0.35) !important;
+    border-radius: 12px !important;
+}
+
+button {
+    border-radius: 12px !important;
+    transition: all 0.25s ease !important;
+}
+
+button.primary {
+    background: linear-gradient(110deg, #2563eb, #06b6d4) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 0 18px rgba(37, 99, 235, 0.35) !important;
+}
+
+button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 26px rgba(6, 182, 212, 0.5) !important;
+}
+
+input[type="range"] {
+    accent-color: #38bdf8 !important;
 }
 
 footer {
     display: none !important;
 }
 """
+
 
 with gr.Blocks(
     theme=gr.themes.Soft(primary_hue="blue"),

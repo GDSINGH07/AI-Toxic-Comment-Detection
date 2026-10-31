@@ -399,7 +399,7 @@ with gr.Blocks(
 
                 
         # MAIN CONTENT AREA
-        with gr.Column(scale=4, min_width=0):
+         with gr.Column(scale=4, min_width=0):
 
             # HOME PAGE
             with gr.Column(visible=True) as home_page:

@@ -131,17 +131,17 @@ No selected toxicity category crossed the chosen threshold.
 
     pie_fig, pie_ax = plt.subplots(figsize=(5, 5))
 
-pie_ax.pie(
-    scores,
-    labels=labels,
-    autopct="%1.1f%%",
-    startangle=90
-)
+    pie_ax.pie(
+        scores,
+        labels=labels,
+        autopct="%1.1f%%",
+        startangle=90
+    )
 
-pie_ax.set_title("Toxicity Category Scores")
-pie_ax.axis("equal")
+    pie_ax.set_title("Toxicity Category Scores")
+    pie_ax.axis("equal")
 
-return result, score_df, fig, pie_fig
+    return result, score_df, fig, pie_fig
 
 
 # ==========================================

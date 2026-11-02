@@ -129,7 +129,19 @@ No selected toxicity category crossed the chosen threshold.
     ax.legend()
     plt.tight_layout()
 
-    return result, score_df, fig
+    pie_fig, pie_ax = plt.subplots(figsize=(5, 5))
+
+pie_ax.pie(
+    scores,
+    labels=labels,
+    autopct="%1.1f%%",
+    startangle=90
+)
+
+pie_ax.set_title("Toxicity Category Scores")
+pie_ax.axis("equal")
+
+return result, score_df, fig, pie_fig
 
 
 # ==========================================
@@ -441,7 +453,7 @@ with gr.Blocks(
                 )
 
                 score_chart = gr.Plot(label="Detection Score Chart")
-
+                pie_chart = gr.Plot(label="Toxicity Category Pie Chart")
                 analyze_button.click(
                     fn=analyze_comment,
                     inputs=[
@@ -453,6 +465,7 @@ with gr.Blocks(
                         result_output,
                         score_table,
                         score_chart
+                        pie_chart
                     ]
                 )
 

@@ -65,7 +65,8 @@ def analyze_comment(comment, threshold_value, selected_categories):
         for i in selected_indices
         if probabilities[i] >= threshold_value / 100
     ]
-
+    toxic_value = 1 if detected else 0
+    non_toxic_value = 0 if detected else 1
     if detected:
         result = "## TOXIC CATEGORY DETECTED\n\n"
         result += "**Detected categories:**\n\n"
@@ -103,7 +104,7 @@ No selected toxicity category crossed the chosen threshold.
         probabilities[i] * 100
         for i in selected_indices
     ]
-
+    non_toxic_score = max(0, 100 - max(scores, default=0))
     labels = [
         category_name(categories[i])
         for i in selected_indices
@@ -132,13 +133,14 @@ No selected toxicity category crossed the chosen threshold.
     pie_fig, pie_ax = plt.subplots(figsize=(5, 5))
 
     pie_ax.pie(
-        scores,
-        labels=labels,
-        autopct="%1.1f%%",
-        startangle=90
+        [toxic_value, non_toxic_value],
+        labels=["Toxic", "Non-Toxic"],
+        autopct="%1.0f%%",
+        startangle=90,
+        colors=["red", "green"]
     )
 
-    pie_ax.set_title("Toxicity Category Scores")
+    pie_ax.set_title("Toxic vs Non-Toxic")
     pie_ax.axis("equal")
 
     return result, score_df, fig, pie_fig

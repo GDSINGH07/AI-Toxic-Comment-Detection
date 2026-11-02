@@ -132,25 +132,25 @@ No selected toxicity category crossed the chosen threshold.
 
     pie_fig, pie_ax = plt.subplots(figsize=(5, 5))
 
-    pie_labels = []
-    pie_values = []
+    detected_count = sum(
+        1 for i in selected_indices
+        if probabilities[i] >= threshold_value / 100
+    )
 
-    for i in selected_indices:
-        if probabilities[i] >= threshold_value / 100:
-            pie_labels.append(category_name(categories[i]))
-            pie_values.append(probabilities[i] * 100)
+    below_threshold_count = len(selected_indices) - detected_count
 
-    if not pie_values:
-        pie_labels = ["Non-Toxic"]
-        pie_values = [1]
+    pie_labels = ["Detected", "Below Threshold"]
+    pie_values = [detected_count, below_threshold_count]
 
     pie_ax.pie(
         pie_values,
         labels=pie_labels,
         autopct="%1.1f%%",
-        startangle=90
+        startangle=90,
+        colors=["tomato", "lightgreen"]
     )
-    pie_ax.set_title("Detected Toxicity Categories")
+
+    pie_ax.set_title("Toxicity Detection Distribution")
     pie_ax.axis("equal")
 
     return result, score_df, fig, pie_fig

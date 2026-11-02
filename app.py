@@ -464,7 +464,7 @@ with gr.Blocks(
                     outputs=[
                         result_output,
                         score_table,
-                        score_chart
+                        score_chart,
                         pie_chart
                     ]
                 )
